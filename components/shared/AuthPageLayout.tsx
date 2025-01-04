@@ -1,5 +1,5 @@
 import Image from "next/image";
-import gradientBackground from "../public/gradient-background.png";
+import gradientBackground from "@/public/gradient-background.png";
 
 export default function AuthPageLayout({ children }: { children: React.ReactNode }) {
     return (
