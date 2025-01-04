@@ -1,66 +1,65 @@
 "use client";
 
 import Image from "next/image";
-import arrowLeftIndigo from '../public/arrow-left-indigo.svg';
+import arrowLeftIndigo from '@/public/arrow-left-indigo.svg';
 import { notoColorEmoji } from "@/app/layout";
 import { emojiCategories } from "@/data/emoji";
 import { useState } from "react";
 import { createPocket } from "@/server/actions/pockets";
 import { useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import { useAppStore } from "@/hooks/useAppStore";
-
-type Props = {
-    switchView: () => void;
-}
 
 type FormData = {
     name: string;
 }
 
-export default function CreatePocket({ switchView }: Props) {
+export default function CreatePocket() {
     const [selectedCategory, setSelectedCategory] = useState<keyof typeof emojiCategories>("Smileys");
     const [selectedEmoji, setSelectedEmoji] = useState<string|null>(null);
-    const [error, setError] = useState<string|null>(null);
-    const { register, formState: { errors }, handleSubmit, setValue } = useForm<FormData>();
-    const { addPocket } = useAppStore();
+    const { register, handleSubmit, setValue } = useForm<FormData>();
+    const { addPocket, switchTaskPopupView, closeTaskPopup } = useAppStore();
 
-    const onPocketSubmit = async (values: FormData) => {
-        if (!selectedEmoji) return;
-
-        setError(null);
-        try {
-            const newPocket = await createPocket({ name: values.name, emoji: selectedEmoji });
+    const { mutate } = useMutation({
+        mutationFn: createPocket,
+        onSuccess: (newPocket) => {
             addPocket(newPocket);
             setValue("name", "");
             setSelectedEmoji(null);
-        } catch (error) {
-            if (error instanceof Error) {
-                setError(error.message);
-            }
-        }
+            toast.success("Pocket successfully created");
+            closeTaskPopup();
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+
+    const onPocketSubmit = async (values: FormData) => {
+        if (!selectedEmoji) return;
+        mutate({ name: values.name, emoji: selectedEmoji });
     };
 
     return (
         <div className="p-5">
             <p 
                 className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition duration-150 mb-4 font-medium text-sm cursor-pointer" 
-                onClick={switchView}
+                onClick={() => switchTaskPopupView("task")}
             >
                 <Image src={arrowLeftIndigo} alt="arrow-left" width={16} height={16} />
                 <span>Go back</span>
             </p>
             <form onSubmit={handleSubmit(onPocketSubmit)}>
                 <div className="bg-gray-50 py-2 px-3 flex items-center rounded-lg mb-4">
-                    <span className={`w-6 h-6 ${notoColorEmoji.className}`}>{selectedEmoji}</span>
+                    <span className="w-6 h-6 font-emoji">{selectedEmoji}</span>
                     <input 
                         type="text" 
                         className="flex-1 text-sm ml-3 bg-transparent focus:outline-none" 
                         placeholder="Create new pocket"
+                        required
                         {...register("name", { required: "Pocket name is required" })}
                     />
-                    <button 
-                        className="bg-gray-200 hover:bg-gray-200 transition duration-150 rounded-lg py-2 px-3 text-sm text-black font-semibold"
-                    >
+                    <button className="bg-gray-200 hover:bg-gray-300 transition duration-150 rounded-lg py-2 px-3 text-sm text-black font-semibold">
                         Create
                     </button>
                 </div>   
@@ -88,7 +87,7 @@ export default function CreatePocket({ switchView }: Props) {
                         onClick={() => setSelectedEmoji(emoji)}
                         key={emoji}
                     >
-                        <span className={notoColorEmoji.className}>{emoji}</span>
+                        <span className={`${notoColorEmoji.className}`}>{emoji}</span>
                     </button>
                 ))}
             </div>

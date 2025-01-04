@@ -1,14 +1,14 @@
 "use client";
 
-import AuthPageLayout from "@/components/AuthPageLayout";
+import AuthPageLayout from "@/components/shared/AuthPageLayout";
 import Image from "next/image";
 import userIcon from "../../public/user-icon.svg";
 import keyIcon from "../../public/key-icon.svg";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { loginUser } from "@/server/actions/auth";
-import { useState } from "react";
-import ErrorMessage from "@/components/ErrorMessage";
+import ErrorMessage from "@/components/shared/ErrorMessage";
+import { useMutation } from "@tanstack/react-query";
 
 type FormData = {
     login: string
@@ -17,23 +17,18 @@ type FormData = {
 
 export default function SignIn() {
     const { register, formState: { errors }, handleSubmit } = useForm<FormData>();
-    const [error, setError] = useState<string|null>(null);
+    const { mutate, error } = useMutation({
+        mutationFn: loginUser,
+    });
 
     const onSubmit = async (values: FormData) => {
-        setError(null);
-        try {
-            await loginUser(values);
-        } catch (error) {
-            if (error instanceof Error) {
-                setError(error.message);
-            }
-        }
+        mutate(values);
     };
 
     return (
         <AuthPageLayout>
             <h1 className="text-3xl font-bold mb-8">Login</h1>
-            {error && <ErrorMessage message={error} />}
+            {error && <ErrorMessage message={error.message} />}
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="bg-gray-100 rounded-lg py-2 px-4 flex items-center gap-2 mb-2">
                     <Image className="w-5 h-5" src={userIcon} alt="user-icon" />

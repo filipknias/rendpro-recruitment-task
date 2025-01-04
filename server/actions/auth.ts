@@ -1,7 +1,8 @@
 "use server";
 
 import { createSession, deleteSession, getToken } from "@/lib/session";
-import { ApiError, AuthResponse, User } from "@/types/api";
+import { ApiError, AuthResponse } from "@/types/api";
+import { User } from "@/types/models";
 import { redirect } from "next/navigation";
 
 type UserCredentials = {

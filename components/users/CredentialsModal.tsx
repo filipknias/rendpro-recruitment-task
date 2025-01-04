@@ -4,7 +4,8 @@ import { completeUserProfile } from "@/server/actions/auth";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import ErrorMessage from "./ErrorMessage";
+import ErrorMessage from "../shared/ErrorMessage";
+import { useMutation } from "@tanstack/react-query";
 
 type FormData = {
     firstName: string;
@@ -14,7 +15,6 @@ type FormData = {
 export default function CredentialsModal() {
     const [file, setFile] = useState<File|null>(null);
     const [submitDisabled, setSubmitDisabled] = useState(true);
-    const [error, setError] = useState<string|null>(null);
     
     const { register, handleSubmit, watch } = useForm<FormData>();
     
@@ -32,16 +32,13 @@ export default function CredentialsModal() {
         }
     }, [formFields, file]);
 
-    const onSubmit = async (values: FormData) => {
+    const { mutate, error } = useMutation({
+        mutationFn: completeUserProfile,
+    });
+
+    const onSubmit = async (userData: FormData) => {
         if (!file) return;
-        setError(null);
-        try {
-            await completeUserProfile({ ...values, avatar: file });
-        } catch (error) {
-            if (error instanceof Error) {
-                setError(error.message);
-            }
-        }
+        mutate({ ...userData, avatar: file });
     };
 
     return (
@@ -49,7 +46,7 @@ export default function CredentialsModal() {
             <div className="bg-white rounded-3xl p-5 w-full sm:w-1/2 lg:w-1/4">
                 <h2 className="text-2xl font-medium mb-1">Almost there!</h2>
                 <p className="mb-4 text-sm">We just need some more information...</p>
-                {error && <ErrorMessage message={error} />}
+                {error && <ErrorMessage message={error.message} />}
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <input 
                         type="text" 

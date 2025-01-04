@@ -2,27 +2,15 @@
 
 import Image from "next/image";
 import PocketLink from "./PocketLink";
-import cmdIcon from "../public/cmd-icon.svg"
-import shortcutIcon1 from "../public/shortcut-icon1.svg"
+import cmdIcon from "@/public/cmd-icon.svg"
+import shortcutIcon1 from "@/public/shortcut-icon1.svg"
 import { logoutUser } from "@/server/actions/auth";
+import useQueryParam from "@/hooks/useQueryParam";
 import { useAppStore } from "@/hooks/useAppStore";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { useCallback } from "react";
 
 export default function PocketsSidebar() {
     const { pockets, user, openTaskPopup } = useAppStore();
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
-
-    const pocketId = searchParams.get("pocket");
-
-    const createQueryString = useCallback((name: string, value: string) => {
-        const params = new URLSearchParams(searchParams.toString())
-        params.set(name, value);
-    
-        return params.toString();
-    }, [searchParams]);
+    const [pocketId, setPocketId] = useQueryParam("pocket");
 
     return (
         <div className="rounded-xl bg-white px-2 lg:px-6 py-10 h-full">
@@ -36,9 +24,13 @@ export default function PocketsSidebar() {
                             name={name}
                             tasksCount={tasks.length}
                             isActive={pocketId === _id}
-                            onClick={() => router.push(pathname + '?' + createQueryString('pocket', _id))}
+                            onClick={() => setPocketId(_id)}
+                            isResponsive
                         />
                     ))}
+                    {pockets.length === 0 && (
+                        <p className="text-gray-500 text-center mb-2">No pockets found</p>
+                    )}
                     <button 
                         className="flex justify-between bg-gray-50 rounded-full pr-2 py-2 pl-3 hover:bg-gray-100 transition duration-150 text-black font-medium text-sm"
                         onClick={() => openTaskPopup("pocket")}
@@ -54,20 +46,20 @@ export default function PocketsSidebar() {
                     </button>
                 </div>
                 <div className="mt-auto">
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                         {user && (
                             <Image 
                                 width={36}
                                 height={36}
                                 className="w-9 h-9 object-cover"
                                 src={user.avatar}
-                                alt="alt" 
+                                alt={user.login}
                             />
                         )}
                         <div className="hidden lg:block">
-                            {user && <p className="mb-1 font-medium text-sm text-black">{user.firstName} {user.lastName}</p>}
+                            {user && <p className="font-medium text-sm text-black">{user.firstName} {user.lastName}</p>}
                             <p 
-                                className="text-gray-600 hover:text-gray-800 transition duration-150 font-medium text-xs cursor-pointer"
+                                className="inline-block text-gray-600 hover:underline font-medium text-xs cursor-pointer"
                                 onClick={logoutUser}
                             >
                                 Log out

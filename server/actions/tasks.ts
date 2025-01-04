@@ -1,10 +1,16 @@
 "use server";
 
 import { getToken } from "@/lib/session";
-import { ApiError, DeleteTaskResponse, Task } from "@/types/api";
+import { ApiError, DeleteTaskResponse } from "@/types/api";
+import { Task } from "@/types/models";
 import { redirect } from "next/navigation";
 
-export async function createTask(pocketId: string, newTask: { description: string, completed: boolean }) {
+type AppTask = {
+    description: string;
+    isCompleted: boolean;
+}
+
+export async function createTask({ pocketId, newTask }: { pocketId: string, newTask: AppTask}) {
     const token = await getToken();
 
     if (!token) {
@@ -23,7 +29,7 @@ export async function createTask(pocketId: string, newTask: { description: strin
     const data = await response.json() as Task|ApiError;
     
 
-    if ("error" in data) {
+    if ("statusCode" in data) {
         throw new Error(data.message);
     }
 
@@ -45,14 +51,14 @@ export async function getPocketTasks(pocketId: string) {
             
     const data = await response.json() as Task[]|ApiError;
 
-    if ("error" in data) {
+    if ("statusCode" in data) {
         throw new Error(data.message);
     }
 
     return data;
 }
 
-export async function updateTask(taskId: string, pocketId: string, updateTask: { description: string, isCompleted: boolean }) {
+export async function updateTask({ taskId, pocketId, updateTask }: { taskId: string, pocketId: string, updateTask: AppTask }) {
     const token = await getToken();
 
     if (!token) {
@@ -70,14 +76,14 @@ export async function updateTask(taskId: string, pocketId: string, updateTask: {
             
     const data = await response.json() as Task|ApiError;
 
-    if ("error" in data) {
+    if ("statusCode" in data) {
         throw new Error(data.message);
     }
 
     return data;
 }
 
-export async function deleteTask(pocketId: string, taskId: string) {
+export async function deleteTask({ pocketId, taskId }: { pocketId: string, taskId: string }) {
     const token = await getToken();
 
     if (!token) {
@@ -93,7 +99,7 @@ export async function deleteTask(pocketId: string, taskId: string) {
             
     const data = await response.json() as DeleteTaskResponse|ApiError;
 
-    if ("error" in data) {
+    if ("statusCode" in data) {
         throw new Error(data.message);
     }
 

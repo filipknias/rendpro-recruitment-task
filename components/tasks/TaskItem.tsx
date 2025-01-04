@@ -1,13 +1,15 @@
 "use client";
 
-import { useAppStore } from "@/hooks/useAppStore";
 import { deleteTask, updateTask } from "@/server/actions/tasks";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AnimatePresence, motion } from "motion/react";
-import trashIcon from '../public/trash-icon.svg';
+import trashIcon from '@/public/trash-icon.svg';
 import Image from "next/image";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
+import useActivePocket from "@/hooks/useActivePocket";
+import { useAppStore } from "@/hooks/useAppStore";
 
 type Props = {
     description: string;
@@ -16,31 +18,44 @@ type Props = {
 }
 
 export default function TaskItem({ description, isCompleted, id }: Props) {
-    const { register, formState: { errors }, watch } = useForm<{ completed: boolean }>({
+    const { register, watch } = useForm<{ completed: boolean }>({
         defaultValues: {
             completed: isCompleted,
         }
     });
-    const { updateTaskCompletedState, pockets, deleteTaskFromState } = useAppStore();
-    const [updateTaskError, setUpdateTaskError] = useState<string|null>(null);
-    const [deleteTaskError, setDeleteTaskError] = useState<string|null>(null);
-    const searchParams = useSearchParams();
-    const pocketId = searchParams.get("pocket");
-    const activePocket = pockets.find((pocket) => pocket._id === pocketId);
+    const { updateTaskCompletedState, deleteTaskFromState } = useAppStore();
+    const { activePocket } = useActivePocket();
     const [popupOpened, setPopupOpened] = useState(false);
 
-    const syncTaskCompletionWithState = async (completed: boolean) => {
-        if (!activePocket) return;
-
-        setUpdateTaskError(null);
-        try {
-            const updatedTask = await updateTask(id, activePocket._id, { description, isCompleted: completed });
+    const updateTaskMutation = useMutation({
+        mutationFn: updateTask,
+        onSuccess: (updatedTask) => {
             updateTaskCompletedState(updatedTask._id, updatedTask.isCompleted);
-        } catch (error) {
-            if (error instanceof Error) {
-                setUpdateTaskError(error.message);
-            }
-        }
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+
+    const deleteTaskMutation = useMutation({
+        mutationFn: deleteTask,
+        onSuccess: () => {
+            deleteTaskFromState(id);
+            setPopupOpened(false);
+            toast.success("Task deleted successfully");
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+
+    const syncTaskCompletionWithState = async (isCompleted: boolean) => {
+        if (!activePocket) return;
+        updateTaskMutation.mutate({ 
+            taskId: id, 
+            pocketId: activePocket._id, 
+            updateTask: { description, isCompleted },
+        });
     };
 
     const completedState = watch("completed");
@@ -51,23 +66,27 @@ export default function TaskItem({ description, isCompleted, id }: Props) {
 
     const handleTaskDelete = async () => {
         if (!activePocket) return;
-
-        setDeleteTaskError(null);
-        try {
-            await deleteTask(activePocket._id, id);
-            deleteTaskFromState(id);
-            setPopupOpened(false);
-        } catch (error) {
-            if (error instanceof Error) {
-                setDeleteTaskError(error.message);
-            }
-        }
+        deleteTaskMutation.mutate({ 
+            pocketId: activePocket._id, 
+            taskId: id,
+        });
     };
 
     return (
-        <div className={`py-1 pr-1 pl-2 rounded-md flex justify-between ${isCompleted ? "bg-indigo-600" : "bg-white"}`}>
-            <div className="flex items-center gap-2">
-                <input type="checkbox" {...register("completed")} />
+        <div className={`py-1 pr-1 pl-2 rounded-md flex justify-between transition duration-150 ${isCompleted ? "bg-indigo-600" : "bg-white"}`}>
+            <div className="flex items-center gap-3">
+                <div className="relative">
+                    <input 
+                        className={`${isCompleted ? "custom-checkbox-indigo" : "custom-checkbox-white"} opacity-0 absolute z-10 w-6 h-6 top-0 left-0`} 
+                        type="checkbox"
+                        {...register("completed")}
+                    />
+                    <div className="border border-gray-200 bg-white w-6 h-6 flex justify-center items-center rounded-md">
+                        <svg className="hidden" width="10" height="7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.76764 0.22597C9.45824 -0.0754185 8.95582 -0.0752285 8.64601 0.22597L3.59787 5.13702L1.35419 2.95437C1.04438 2.65298 0.542174 2.65298 0.23236 2.95437C-0.0774534 3.25576 -0.0774534 3.74431 0.23236 4.0457L3.03684 6.77391C3.19165 6.92451 3.39464 7 3.59765 7C3.80067 7 4.00386 6.9247 4.15867 6.77391L9.76764 1.31727C10.0775 1.01609 10.0775 0.52734 9.76764 0.22597Z" fill="currentColor"></path>
+                        </svg>
+                    </div>
+                </div>
                 <p className={`text-sm ${isCompleted ? "text-white line-through" : "text-black"}`}>{description}</p>
             </div>
             <div className="relative">

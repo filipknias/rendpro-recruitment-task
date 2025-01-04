@@ -1,7 +1,8 @@
 "use server";
 
 import { getToken } from "@/lib/session";
-import { ApiError, DeletePocketResponse, GetPocketsResponse, Pocket } from "@/types/api";
+import { ApiError, DeletePocketResponse } from "@/types/api";
+import { Pocket } from "@/types/models";
 import { redirect } from "next/navigation";
 
 export async function getPockets() {
@@ -17,9 +18,9 @@ export async function getPockets() {
         }
     });
             
-    const data = await response.json() as GetPocketsResponse|ApiError;
-
-    if ("error" in data) {
+    const data = await response.json() as Pocket[]|ApiError;
+    
+    if ("statusCode" in data) {
         throw new Error(data.message);
     }
 
@@ -32,7 +33,7 @@ export async function createPocket(newPocket: { name: string, emoji: string }) {
     if (!token) {
         return redirect("/sign-in");
     }
-
+    
     const response = await fetch("https://recruitment-task.jakubcloud.pl/pockets", {
         method: "POST",
         body: JSON.stringify(newPocket),
@@ -44,7 +45,7 @@ export async function createPocket(newPocket: { name: string, emoji: string }) {
             
     const data = await response.json() as Pocket|ApiError;
 
-    if ("error" in data) {
+    if ("statusCode" in data) {
         throw new Error(data.message);
     }
 
@@ -67,7 +68,7 @@ export async function deletePocket(pocketId: string) {
 
     const data = await response.json() as DeletePocketResponse|ApiError;
 
-    if ("error" in data) {
+    if ("statusCode" in data) {
         throw new Error(data.message);
     }
 

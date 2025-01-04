@@ -1,8 +1,10 @@
-import { Pocket, Task, User } from '@/types/api';
+"use client";
+
+import { Pocket, Task, User } from '@/types/models';
 import { create } from 'zustand';
 
 type UserStore = Omit<User, "password">;
-type TaskPopupInitialView = "task"|"pocket";
+type TaskPopupView = "task"|"pocket";
 
 type Store = {
     user: UserStore|null;
@@ -10,8 +12,8 @@ type Store = {
     tasks: Task[];
     taskPopup: {
         open: boolean;
-        initialView: TaskPopupInitialView;
-    },
+        view: TaskPopupView;
+    };
     setCurrentUser: (user: User) => void;
     logoutUser: () => void;
     setInitialData: (initialData: { user: User, pockets: Pocket[] }) => void;
@@ -21,9 +23,11 @@ type Store = {
     addTaskToActivePocket: (task: Task) => void;
     updateTaskCompletedState: (taskId: string, completed: boolean) => void;
     deleteTaskFromState: (taskId: string) => void;
-    openTaskPopup: (initialView?: TaskPopupInitialView) => void;
+    deletePocketFromState: (pocketId: string) => void;
+    openTaskPopup: (view?: TaskPopupView) => void;
     closeTaskPopup: () => void;
-    toggleTaskPopup: (initialView?: TaskPopupInitialView) => void;
+    toggleTaskPopup: (view?: TaskPopupView) => void;
+    switchTaskPopupView: (view: TaskPopupView) => void;
 }
 
 export const useAppStore = create<Store>((set) => ({
@@ -32,7 +36,7 @@ export const useAppStore = create<Store>((set) => ({
     tasks: [],
     taskPopup: {
         open: false,
-        initialView: "task",
+        view: "task",
     },
     
     setCurrentUser: (user: User) => {
@@ -107,11 +111,18 @@ export const useAppStore = create<Store>((set) => ({
         });
     },
 
-    openTaskPopup: (initialView?: TaskPopupInitialView) => {
+    deletePocketFromState: (pocketId: string) => {
+        set((state) => {
+            const newPockets = state.pockets.filter((pocket) => pocket._id !== pocketId);
+            return { pockets: newPockets };
+        });
+    },
+
+    openTaskPopup: (view?: TaskPopupView) => {
         set((state) => ({
             taskPopup: {
                 open: true,
-                initialView: initialView ?? state.taskPopup.initialView,
+                view: view ?? state.taskPopup.view,
             }
         }));
     },
@@ -125,11 +136,20 @@ export const useAppStore = create<Store>((set) => ({
         }));
     },
 
-    toggleTaskPopup: (initialView?: TaskPopupInitialView) => {
+    toggleTaskPopup: (view?: TaskPopupView) => {
         set((state) => ({
             taskPopup: {
                 open: !state.taskPopup.open,
-                initialView: initialView ?? state.taskPopup.initialView,
+                view: view ?? state.taskPopup.view,
+            }
+        }));
+    },
+
+    switchTaskPopupView: (view: TaskPopupView) => {
+        set((state) => ({
+            taskPopup: {
+                ...state.taskPopup,
+                view,
             }
         }));
     },

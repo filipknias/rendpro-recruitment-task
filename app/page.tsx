@@ -1,8 +1,8 @@
 import { getPockets } from "@/server/actions/pockets";
-import DashboardView from "@/components/DashboardView";
+import DashboardView from "@/components/views/DashboardView";
 import { getUserInfo } from "@/server/actions/auth";
 import { getPocketTasks } from "@/server/actions/tasks";
-import { Task } from "@/types/api";
+import { Task } from "@/types/models";
 import { redirect } from 'next/navigation';
 
 type PageProps = {

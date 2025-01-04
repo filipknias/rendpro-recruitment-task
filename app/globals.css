@@ -6,3 +6,23 @@
     box-sizing: border-box;
     margin: 0;
 }
+
+.custom-checkbox-white:checked + div {
+    @apply bg-indigo-600;
+    @apply border-indigo-600;
+}
+
+.custom-checkbox-indigo:checked + div {
+    @apply bg-indigo-400;
+    @apply border-indigo-400;
+}
+  
+.custom-checkbox-white:checked + div svg {
+    @apply text-white opacity-100;
+    @apply block;
+}
+
+.custom-checkbox-indigo:checked + div svg {
+    @apply text-white opacity-100;
+    @apply block;
+}
