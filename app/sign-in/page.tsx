@@ -52,7 +52,7 @@ export default function SignIn() {
                 {errors.password && <p className="text-sm text-red-500 mb-2">{errors.password.message}</p>}
                 <button className="rounded-lg py-2 px-4 mb-8 bg-indigo-600 hover:bg-indigo-700 focus:ring focus:ring-indigo-300 text-white font-semibold transition duration-150" type="submit">Login me</button>
                 <p className="font-medium">
-                    <span className="mr-1">Don't have an account?</span>
+                    <span className="mr-1">Dont have an account?</span>
                     <Link href="/sign-up" className="text-indigo-600 hover:underline">Register now.</Link>
                 </p>
             </form>

@@ -8,7 +8,6 @@ import { getPocketTasks } from "@/server/actions/tasks";
 import useQueryParam from "@/hooks/useQueryParam";
 import ActivePocketView from "./ActivePocketView";
 import { useAppStore } from "@/hooks/useAppStore";
-import MobileSidebar from "../pockets/MobileSidebar";
 
 type Props = {
     initialData: {
@@ -40,12 +39,6 @@ export default function DashboardView({ initialData }: Props) {
     return (
         <div className="p-4 bg-gray-100 h-screen w-screen flex">
             <div className="w-auto lg:w-1/4">
-                {/* <div className="lg:hidden h-full">
-                    <MobileSidebar />
-                </div>
-                <div className="hidden lg:block h-full">
-                    <PocketsSidebar />
-                </div> */}
                 <PocketsSidebar />
             </div>
             <div className="w-auto lg:w-3/4 flex-1">
