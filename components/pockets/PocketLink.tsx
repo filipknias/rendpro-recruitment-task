@@ -1,4 +1,4 @@
-import { notoColorEmoji } from "@/app/layout";
+import { notoColorEmoji } from "@/fonts/noto-emoji";
 
 type Props = {
     emoji: string;

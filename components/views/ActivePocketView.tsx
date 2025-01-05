@@ -3,7 +3,7 @@
 import useActivePocket from "@/hooks/useActivePocket";
 import useQueryParam from "@/hooks/useQueryParam";
 import { useMemo } from "react";
-import { notoColorEmoji } from "@/app/layout";
+import { notoColorEmoji } from "@/fonts/noto-emoji";
 import TaskItem from "../tasks/TaskItem";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";

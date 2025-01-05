@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import arrowLeftIndigo from '@/public/arrow-left-indigo.svg';
-import { notoColorEmoji } from "@/app/layout";
+import { notoColorEmoji } from "@/fonts/noto-emoji";
 import { emojiCategories } from "@/data/emoji";
 import { useState } from "react";
 import { createPocket } from "@/server/actions/pockets";
