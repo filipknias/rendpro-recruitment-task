@@ -19,6 +19,12 @@ export default function SignIn() {
     const { register, formState: { errors }, handleSubmit } = useForm<FormData>();
     const { mutate, error } = useMutation({
         mutationFn: loginUser,
+        onSuccess: (response) => {
+            console.log(response);
+        },
+        onError: (error) => {
+            console.error(error);
+        },
     });
 
     const onSubmit = async (values: FormData) => {

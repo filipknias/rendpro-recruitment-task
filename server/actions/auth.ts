@@ -37,27 +37,25 @@ export async function registerUser(credentials: UserCredentials) {
 }
 
 export async function loginUser(credentials: UserCredentials) {
-    try {
-        const response = await fetch("https://recruitment-task.jakubcloud.pl/auth/login", {
-            method: "POST",
-            body: JSON.stringify(credentials),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-                
-        const data = await response.json() as AuthResponse|ApiError;
-    
-        if ("token" in data) {
-            await createSession("token", data.token);
+    const response = await fetch("https://recruitment-task.jakubcloud.pl/auth/login", {
+        method: "POST",
+        body: JSON.stringify(credentials),
+        headers: {
+            "Content-Type": "application/json"
         }
-    
-        redirect("/");
-    } catch (error) {
-        if (error instanceof Error) {
-            return { message: error.message }
-        }
+    });
+            
+    const data = await response.json() as AuthResponse|ApiError;
+
+    if ("statusCode" in data) {
+        throw new Error(data.message);
     }
+
+    if ("token" in data) {
+        await createSession("token", data.token);
+    }
+
+    redirect("/");
 }
 
 export async function completeUserProfile(completeCredentials: AdditionalUserCredentials) {
