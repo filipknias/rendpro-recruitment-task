@@ -53,7 +53,7 @@ export default function PocketsSidebar() {
                                 height={36}
                                 className="w-9 h-9 object-cover"
                                 src={user.avatar}
-                                alt={user.login}
+                                alt={user.firstName}
                             />
                         )}
                         <div className="hidden lg:block">

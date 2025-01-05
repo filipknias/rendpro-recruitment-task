@@ -22,7 +22,10 @@ export default function ActivePocketView() {
     }, [completed]);
 
     const visibleTasks = useMemo(() => {
-        return tasks.filter((task) => task.isCompleted === isCompletedStatus);
+        if (isCompletedStatus) {
+            return tasks;
+        }
+        return tasks.filter((task) => task.isCompleted === false);
     }, [tasks, isCompletedStatus]);
 
     const { mutate } = useMutation({
