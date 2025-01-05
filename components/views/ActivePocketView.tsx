@@ -14,7 +14,8 @@ import { useAppStore } from "@/hooks/useAppStore";
 export default function ActivePocketView() {
     const { activePocket, remainingTasks } = useActivePocket();
     const [completed, setCompleted] = useQueryParam("completed");
-    const { tasks, deletePocketFromState } = useAppStore();
+    const [_, setPocketId] = useQueryParam("pocket");
+    const { tasks, pockets, deletePocketFromState } = useAppStore();
     
     const isCompletedStatus = useMemo(() => {
         return completed ? completed.toLowerCase() === "true" : false;
@@ -30,7 +31,11 @@ export default function ActivePocketView() {
             if (!activePocket) return;
             deletePocketFromState(activePocket._id);
             toast.success("Pocket deleted successfully");
-            redirect("/");
+            if (pockets.length > 0) {
+                setPocketId(pockets[0]._id);
+            } else {
+                redirect("/");
+            }
         },
         onError: (error) => {
             toast.error(error.message);

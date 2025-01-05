@@ -28,7 +28,7 @@ export default function CreatePocket() {
             setValue("name", "");
             setSelectedEmoji(null);
             toast.success("Pocket successfully created");
-            closeTaskPopup();
+            closeTaskPopup("task");
         },
         onError: (error) => {
             toast.error(error.message);
@@ -51,7 +51,7 @@ export default function CreatePocket() {
             </p>
             <form onSubmit={handleSubmit(onPocketSubmit)}>
                 <div className="bg-gray-50 py-2 px-3 flex items-center rounded-lg mb-4">
-                    <span className="w-6 h-6 font-emoji">{selectedEmoji}</span>
+                    <span className={`w-6 h-6 ${notoColorEmoji.className}`}>{selectedEmoji}</span>
                     <input 
                         type="text" 
                         className="flex-1 text-sm ml-3 bg-transparent focus:outline-none" 

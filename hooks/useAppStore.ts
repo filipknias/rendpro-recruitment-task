@@ -25,7 +25,7 @@ type Store = {
     deleteTaskFromState: (taskId: string) => void;
     deletePocketFromState: (pocketId: string) => void;
     openTaskPopup: (view?: TaskPopupView) => void;
-    closeTaskPopup: () => void;
+    closeTaskPopup: (view?: TaskPopupView) => void;
     toggleTaskPopup: (view?: TaskPopupView) => void;
     switchTaskPopupView: (view: TaskPopupView) => void;
 }
@@ -127,11 +127,11 @@ export const useAppStore = create<Store>((set) => ({
         }));
     },
 
-    closeTaskPopup: () => {
+    closeTaskPopup: (view?: TaskPopupView) => {
         set((state) => ({
             taskPopup: {
-                ...state.taskPopup,
                 open: false,
+                view: view ?? state.taskPopup.view,
             }
         }));
     },
