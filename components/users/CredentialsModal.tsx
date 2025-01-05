@@ -32,7 +32,7 @@ export default function CredentialsModal() {
         }
     }, [formFields, file]);
 
-    const { mutate, error } = useMutation({
+    const { mutate, error, isPending } = useMutation({
         mutationFn: completeUserProfile,
     });
 
@@ -87,7 +87,7 @@ export default function CredentialsModal() {
                     </div>
                     <button 
                         className="rounded-lg py-2 px-4 bg-indigo-600 hover:bg-indigo-700 focus:ring focus:ring-indigo-300 text-white font-semibold transition duration-150 disabled:bg-indigo-300" 
-                        disabled={submitDisabled}
+                        disabled={submitDisabled || isPending}
                         type="submit"
                     >
                         {submitDisabled ? "Complete information" : "Let’s start!"}

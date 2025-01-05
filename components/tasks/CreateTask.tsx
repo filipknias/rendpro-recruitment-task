@@ -23,7 +23,7 @@ export default function CreateTask() {
     const { addTask, addTaskToActivePocket, closeTaskPopup, pockets, switchTaskPopupView } = useAppStore();
     const [pocketId] = useQueryParam("pocket");
 
-    const { mutate } = useMutation({
+    const { mutate, isPending } = useMutation({
         mutationFn: createTask,
         onSuccess: (newTask) => {
             if (pocketId === newTask.pocket) {
@@ -72,7 +72,10 @@ export default function CreateTask() {
                         required
                         {...register("description", { required: "Task name is required" })}
                     />
-                    <button className="bg-gray-100 hover:bg-gray-200 transition duration-150 rounded-lg py-2 px-3 text-sm text-black font-semibold">
+                    <button 
+                        className="bg-gray-100 hover:bg-gray-200 transition duration-150 rounded-lg py-2 px-3 text-sm text-black font-semibold disabled:bg-gray-100"
+                        disabled={isPending}
+                    >
                         Create
                     </button>
                 </div>    

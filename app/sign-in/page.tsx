@@ -17,14 +17,8 @@ type FormData = {
 
 export default function SignIn() {
     const { register, formState: { errors }, handleSubmit } = useForm<FormData>();
-    const { mutate, error } = useMutation({
+    const { mutate, error, isPending } = useMutation({
         mutationFn: loginUser,
-        onSuccess: (response) => {
-            console.log(response);
-        },
-        onError: (error) => {
-            console.error(error);
-        },
     });
 
     const onSubmit = async (values: FormData) => {
@@ -56,7 +50,13 @@ export default function SignIn() {
                     />
                 </div>
                 {errors.password && <p className="text-sm text-red-500 mb-2">{errors.password.message}</p>}
-                <button className="rounded-lg py-2 px-4 mb-8 bg-indigo-600 hover:bg-indigo-700 focus:ring focus:ring-indigo-300 text-white font-semibold transition duration-150" type="submit">Login me</button>
+                <button 
+                    className="rounded-lg py-2 px-4 mb-8 bg-indigo-600 hover:bg-indigo-700 focus:ring focus:ring-indigo-300 text-white font-semibold transition duration-150 disabled:bg-indigo-300" 
+                    type="submit"
+                    disabled={isPending}
+                >
+                    Login me
+                </button>
                 <p className="font-medium">
                     <span className="mr-1">Dont have an account?</span>
                     <Link href="/sign-up" className="text-indigo-600 hover:underline">Register now.</Link>

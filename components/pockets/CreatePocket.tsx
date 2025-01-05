@@ -21,7 +21,7 @@ export default function CreatePocket() {
     const { register, handleSubmit, setValue } = useForm<FormData>();
     const { addPocket, switchTaskPopupView, closeTaskPopup } = useAppStore();
 
-    const { mutate } = useMutation({
+    const { mutate, isPending } = useMutation({
         mutationFn: createPocket,
         onSuccess: (newPocket) => {
             addPocket(newPocket);
@@ -59,7 +59,10 @@ export default function CreatePocket() {
                         required
                         {...register("name", { required: "Pocket name is required" })}
                     />
-                    <button className="bg-gray-200 hover:bg-gray-300 transition duration-150 rounded-lg py-2 px-3 text-sm text-black font-semibold">
+                    <button 
+                        className="bg-gray-200 hover:bg-gray-300 transition duration-150 rounded-lg py-2 px-3 text-sm text-black font-semibold disabled:bg-gray-100"
+                        disabled={isPending}
+                    >
                         Create
                     </button>
                 </div>   
