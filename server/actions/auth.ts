@@ -37,6 +37,7 @@ export async function registerUser(credentials: UserCredentials) {
 }
 
 export async function loginUser(credentials: UserCredentials) {
+    let redirectPath: string|null = null;
     try {
         const response = await fetch("https://recruitment-task.jakubcloud.pl/auth/login", {
             method: "POST",
@@ -50,28 +51,25 @@ export async function loginUser(credentials: UserCredentials) {
 
         if ("token" in data) {
             await createSession("token", data.token);
+            redirectPath = "/";
+            return { success: true, token: data.token };
         }
-        
-        return data;
+
+        if ("error" in data) {
+            return { success: false, message: data.message };
+        }
     } catch (error) {
         if (error instanceof Error) {
             return {
+                success: false,
                 message: error.message,
-                error: "An error occurred",
-                statusCode: 500,
             };
         }
+    } finally {
+        if (redirectPath) {
+            redirect(redirectPath);
+        }
     }
-
-    // if ("statusCode" in data) {
-    //     throw new Error(data.message);
-    // }
-
-    // if ("token" in data) {
-    //     await createSession("token", data.token);
-    // }
-
-    redirect("/");
 }
 
 export async function completeUserProfile(completeCredentials: AdditionalUserCredentials) {

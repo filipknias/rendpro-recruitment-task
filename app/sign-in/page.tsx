@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { loginUser } from "@/server/actions/auth";
 import ErrorMessage from "@/components/shared/ErrorMessage";
 import { useMutation } from "@tanstack/react-query";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 type FormData = {
     login: string
@@ -28,8 +29,8 @@ export default function SignIn() {
     return (
         <AuthPageLayout>
             <h1 className="text-3xl font-bold mb-8">Login</h1>
-            {error && <ErrorMessage message={error.message} />}
-            {data && "message" in data && <ErrorMessage message={data.message} />}
+            {error && !isRedirectError(error) && <ErrorMessage message={error.message} />}
+            {data && data.message && <ErrorMessage message={data.message} />}
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="bg-gray-100 rounded-lg py-2 px-4 flex items-center gap-2 mb-2">
                     <Image className="w-5 h-5" src={userIcon} alt="user-icon" />
