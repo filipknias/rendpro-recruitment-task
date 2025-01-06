@@ -9,6 +9,7 @@ import useQueryParam from "@/hooks/useQueryParam";
 import ActivePocketView from "./ActivePocketView";
 import { useAppStore } from "@/hooks/useAppStore";
 import { toast } from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 
 type Props = {
     initialData: {
@@ -22,25 +23,30 @@ export default function DashboardView({ initialData }: Props) {
     const { setInitialData, setPocketTasks } = useAppStore();
     const [pocketId] = useQueryParam("pocket");
 
-    const fetchAndSetPocketTasks = async () => {
-        if (!pocketId) return;
-        const tasksData = await getPocketTasks(pocketId);
-        if (!tasksData?.success && tasksData?.message) {
-            toast.error(tasksData.message);
+    const { data, error } = useQuery({
+        queryKey: ['update-task', pocketId],
+        queryFn: () => getPocketTasks(pocketId!),
+        enabled: pocketId !== null,
+    });
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error.message);
         }
-        if (tasksData?.tasks) {
-            setPocketTasks(tasksData.tasks);
+      }, [error]);
+
+    useEffect(() => {
+        if (!data?.success && data?.message) {
+            toast.error(data.message);
         }
-    };
+        if (data?.tasks) {
+            setPocketTasks(data.tasks);
+        }
+    }, [data]);
 
     useEffect(() => {
         setInitialData(initialData);
     }, [initialData]);
-
-    useEffect(() => {
-        fetchAndSetPocketTasks();
-    }, [pocketId]);
-
 
     return (
         <div className="p-4 bg-gray-100 h-screen w-screen flex">

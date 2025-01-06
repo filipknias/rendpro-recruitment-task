@@ -191,6 +191,8 @@ export async function logoutUser() {
         }
     
         await deleteSession("token");
+
+        redirectPath = "/";
     } catch (error) {
         if (error instanceof Error) {
             return {
