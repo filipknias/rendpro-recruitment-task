@@ -10,26 +10,38 @@ type PageProps = {
 };
 
 export default async function Home({ searchParams }: PageProps) {
-    const user = await getUserInfo();
-    const pockets = await getPockets();
+    const userData = await getUserInfo();
+    const pocketsData = await getPockets();
     const { pocket: pocketId } = await searchParams;
 
+    const getTasks = async (id: string) => {
+        const tasksData = await getPocketTasks(id);
+        return tasksData?.tasks || [];
+    };
+
+    if (!userData || !pocketsData) return null;
+
+    const { user } = userData;
+    const { pockets } = pocketsData;
     let tasks: Task[] = [];
 
     if (pocketId && typeof pocketId === "string") {
-        tasks = await getPocketTasks(pocketId);
-    } else if (pockets.length > 0) {
-        tasks = await getPocketTasks(pockets[0]._id);
+        tasks = await getTasks(pocketId);
+    } else if (pockets && pockets.length > 0) {
+        const firstPocketId = pockets[0]._id;
+        tasks = await getTasks(firstPocketId);
         redirect(`/?pocket=${pockets[0]._id}`);
     }
 
-    return (
-        <DashboardView 
-            initialData={{
-                user,
-                pockets,
-                tasks,
-            }}
-        />
-    )
+    if (user && pockets) {
+        return (
+            <DashboardView 
+                initialData={{
+                    user,
+                    pockets,
+                    tasks,
+                }}
+            />
+        )
+    }
 }

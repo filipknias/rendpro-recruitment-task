@@ -21,7 +21,7 @@ export default function TaskItem({ description, isCompleted, id }: Props) {
     const { register, watch } = useForm<{ completed: boolean }>({
         defaultValues: {
             completed: isCompleted,
-        }
+        },
     });
     const { updateTaskCompletedState, deleteTaskFromState } = useAppStore();
     const { activePocket } = useActivePocket();
@@ -29,8 +29,13 @@ export default function TaskItem({ description, isCompleted, id }: Props) {
 
     const updateTaskMutation = useMutation({
         mutationFn: updateTask,
-        onSuccess: (updatedTask) => {
-            updateTaskCompletedState(updatedTask._id, updatedTask.isCompleted);
+        onSuccess: (taskData) => {
+            if (!taskData?.success && taskData?.message) {
+                toast.error(taskData.message);
+            }
+            if (taskData?.task) {
+                updateTaskCompletedState(taskData.task._id, taskData.task.isCompleted);
+            }
         },
         onError: (error) => {
             toast.error(error.message);

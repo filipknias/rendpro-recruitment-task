@@ -8,6 +8,7 @@ import { getPocketTasks } from "@/server/actions/tasks";
 import useQueryParam from "@/hooks/useQueryParam";
 import ActivePocketView from "./ActivePocketView";
 import { useAppStore } from "@/hooks/useAppStore";
+import { toast } from "react-hot-toast";
 
 type Props = {
     initialData: {
@@ -23,8 +24,13 @@ export default function DashboardView({ initialData }: Props) {
 
     const fetchAndSetPocketTasks = async () => {
         if (!pocketId) return;
-        const tasks = await getPocketTasks(pocketId);
-        setPocketTasks(tasks);
+        const tasksData = await getPocketTasks(pocketId);
+        if (!tasksData?.success && tasksData?.message) {
+            toast.error(tasksData.message);
+        }
+        if (tasksData?.tasks) {
+            setPocketTasks(tasksData.tasks);
+        }
     };
 
     useEffect(() => {

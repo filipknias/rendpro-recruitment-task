@@ -23,12 +23,17 @@ export default function CreatePocket() {
 
     const { mutate, isPending } = useMutation({
         mutationFn: createPocket,
-        onSuccess: (newPocket) => {
-            addPocket(newPocket);
+        onSuccess: (pocketData) => {
+            if (pocketData?.pocket) {
+                addPocket(pocketData?.pocket);
+                toast.success("Pocket successfully created");
+                closeTaskPopup("task");
+            }
+            if (!pocketData?.success && pocketData?.message) {
+                toast.error(pocketData.message);
+            }
             setValue("name", "");
             setSelectedEmoji(null);
-            toast.success("Pocket successfully created");
-            closeTaskPopup("task");
         },
         onError: (error) => {
             toast.error(error.message);

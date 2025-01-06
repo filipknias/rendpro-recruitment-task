@@ -17,22 +17,38 @@ type AdditionalUserCredentials = {
 }
 
 export async function registerUser(credentials: UserCredentials) {
-    const response = await fetch("https://recruitment-task.jakubcloud.pl/auth/register", {
-        method: "POST",
-        body: JSON.stringify(credentials),
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
-
-    const data = await response.json() as AuthResponse|ApiError;
+    let redirectPath: string|null = null;
+    try { 
+        const response = await fetch("https://recruitment-task.jakubcloud.pl/auth/register", {
+            method: "POST",
+            body: JSON.stringify(credentials),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
     
-    if ("error" in data) {
-        throw new Error(data.message);
-    }
+        const data = await response.json() as AuthResponse|ApiError;
+        
+        if ("token" in data) {
+            await createSession("token", data.token);
+            redirectPath = "/";
+            return { success: true, token: data.token };
+        }
 
-    if ("token" in data) {
-        await createSession("token", data.token);
+        if ("error" in data) {
+            return { success: false, message: data.message };
+        }
+    } catch (error) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: error.message,
+            };
+        }
+    } finally {
+        if (redirectPath) {
+            redirect(redirectPath);
+        }
     }
 }
 
@@ -65,7 +81,8 @@ export async function loginUser(credentials: UserCredentials) {
                 message: error.message,
             };
         }
-    } finally {
+    } 
+    finally {
         if (redirectPath) {
             redirect(redirectPath);
         }
@@ -73,82 +90,117 @@ export async function loginUser(credentials: UserCredentials) {
 }
 
 export async function completeUserProfile(completeCredentials: AdditionalUserCredentials) {
-    const token = await getToken();
+    let redirectPath: string|null = null;
 
-    if (!token) {
-        return redirect("/sign-in");
-    }
+    try {
+        const token = await getToken();
 
-    const formData = new FormData();
-    formData.append('file', completeCredentials.avatar);
+        if (!token) {
+            return redirect("/sign-in");
+        }
     
-    const avatarRequest = await fetch('https://recruitment-task.jakubcloud.pl/users/avatar', {
-        method: 'PUT',
-        body: formData,
-        headers: {
-            "Authorization": `Bearer ${token}`,
+        const formData = new FormData();
+        formData.append('file', completeCredentials.avatar);
+        
+        const avatarRequest = await fetch('https://recruitment-task.jakubcloud.pl/users/avatar', {
+            method: 'PUT',
+            body: formData,
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        });
+        const updateRequest = await fetch('https://recruitment-task.jakubcloud.pl/users/update', {
+            method: 'PUT',
+            body: JSON.stringify({
+                firstName: completeCredentials.firstName,
+                lastName: completeCredentials.lastName,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            }
+        });
+    
+        await Promise.all([avatarRequest, updateRequest]);
+    } catch (error) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: error.message,
+            };
         }
-    });
-    const updateRequest = await fetch('https://recruitment-task.jakubcloud.pl/users/update', {
-        method: 'PUT',
-        body: JSON.stringify({
-            firstName: completeCredentials.firstName,
-            lastName: completeCredentials.lastName,
-        }),
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+    } finally {
+        if (redirectPath) {
+            redirect(redirectPath);
         }
-    });
-
-    await Promise.all([avatarRequest, updateRequest]);
-
-    redirect("/");
+    }
 }
 
 export async function getUserInfo() {
-    const token = await getToken();
+    try {
+        const token = await getToken();
 
-    if (!token) {
-        return redirect("/sign-in");
-    }
-
-    const response = await fetch("https://recruitment-task.jakubcloud.pl/users/me", {
-        headers: {
-            "Authorization": `Bearer ${token}`,
+        if (!token) {
+            return redirect("/sign-in");
         }
-    });
-
-    const data = await response.json() as User|ApiError;
-
-    if ("error" in data) {
-        throw new Error(data.message);
+    
+        const response = await fetch("https://recruitment-task.jakubcloud.pl/users/me", {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        });
+    
+        const data = await response.json() as User|ApiError;
+    
+        if ("error" in data) {
+            return { success: false, message: data.message };
+        }
+    
+        return { success: true, user: data };
+    } catch (error) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: error.message,
+            };
+        }
     }
-
-    return data;
 }
 
 export async function logoutUser() {
-    const token = await getToken();
+    let redirectPath: string|null = null;
+    try {
+        const token = await getToken();
 
-    if (!token) {
-        return redirect("/sign-in");
-    }
-
-    const response = await fetch("https://recruitment-task.jakubcloud.pl/auth/logout", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`,
+        if (!token) {
+            redirectPath = "/sign-in";
+            return;
         }
-    });
-            
-    const data = await response.json() as AuthResponse|ApiError;
-
-    if ("error" in data) {
-        throw new Error(data.message);
+    
+        const response = await fetch("https://recruitment-task.jakubcloud.pl/auth/logout", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        });
+                
+        const data = await response.json() as AuthResponse|ApiError;
+    
+        if ("error" in data) {
+            return { success: false, message: data.message };
+        }
+    
+        await deleteSession("token");
+    } catch (error) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: error.message,
+            };
+        }
+    } finally {
+        if (redirectPath) {
+            redirect(redirectPath);
+        }
     }
-
-    deleteSession("token");
-
-    redirect("/sign-in");
 }

@@ -25,16 +25,21 @@ export default function CreateTask() {
 
     const { mutate, isPending } = useMutation({
         mutationFn: createTask,
-        onSuccess: (newTask) => {
-            if (pocketId === newTask.pocket) {
-                addTaskToActivePocket(newTask);
+        onSuccess: (taskData) => {
+            if (!taskData?.success && taskData?.message) {
+                toast.error(taskData.message);
             }
-            addTask(newTask);
-            setValue("description", "");
-            setValue("isCompleted", false);
-            setSelectedPocketId(null);
-            toast.success("Task successfully created");
-            closeTaskPopup();
+            if (taskData?.task) {
+                if (pocketId === taskData.task.pocket) {
+                    addTaskToActivePocket(taskData.task);
+                }
+                addTask(taskData.task);
+                setValue("description", "");
+                setValue("isCompleted", false);
+                setSelectedPocketId(null);
+                toast.success("Task successfully created");
+                closeTaskPopup();
+            }
         },
         onError: (error) => {
             toast.error(error.message);
