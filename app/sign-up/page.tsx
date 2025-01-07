@@ -70,7 +70,7 @@ export default function SignUp() {
                 </button>
                 <p className="font-medium">
                     <span className="mr-1">Have account already?</span>
-                    <Link href="/sign-up" className="text-indigo-600 hover:underline">Login.</Link>
+                    <Link href="/sign-in" className="text-indigo-600 hover:underline">Login.</Link>
                 </p>
             </form>
             {credentialsModalOpen && <CredentialsModal />}
