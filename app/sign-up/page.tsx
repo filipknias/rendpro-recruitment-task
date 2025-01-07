@@ -24,8 +24,10 @@ export default function SignUp() {
 
     const { mutate, error, isPending, data } = useMutation({
         mutationFn: registerUser,
-        onSuccess: () => {
-            setCredentialsModalOpen(true);
+        onSuccess: (data) => {
+            if (data?.token) {
+                setCredentialsModalOpen(true);
+            }
         },
     });
     

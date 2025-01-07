@@ -31,7 +31,6 @@ export async function registerUser(credentials: UserCredentials) {
         
         if ("token" in data) {
             await createSession("token", data.token);
-            redirectPath = "/";
             return { success: true, token: data.token };
         }
 
@@ -122,6 +121,8 @@ export async function completeUserProfile(completeCredentials: AdditionalUserCre
         });
     
         await Promise.all([avatarRequest, updateRequest]);
+
+        redirectPath = "/";
     } catch (error) {
         if (error instanceof Error) {
             return {

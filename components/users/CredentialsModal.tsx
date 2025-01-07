@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import ErrorMessage from "../shared/ErrorMessage";
 import { useMutation } from "@tanstack/react-query";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 type FormData = {
     firstName: string;
@@ -46,18 +47,20 @@ export default function CredentialsModal() {
             <div className="bg-white rounded-3xl p-5 w-full sm:w-1/2 lg:w-1/4">
                 <h2 className="text-2xl font-medium mb-1">Almost there!</h2>
                 <p className="mb-4 text-sm">We just need some more information...</p>
-                {error && <ErrorMessage message={error.message} />}
+                {error && !isRedirectError(error) && <ErrorMessage message={error.message} />}
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <input 
                         type="text" 
                         className="bg-gray-100 rounded-lg py-2 px-4 mb-3 w-full" 
                         placeholder="First Name"
+                        required
                         {...register("firstName", { required: "First name is required" })}
                     />
                     <input 
                         type="text" 
                         className="bg-gray-100 rounded-lg py-2 px-4 mb-3 w-full" 
                         placeholder="Last Name"
+                        required
                         {...register("lastName", { required: "Last name is required" })}
                     />
                     <div className="flex gap-2 mb-4">
